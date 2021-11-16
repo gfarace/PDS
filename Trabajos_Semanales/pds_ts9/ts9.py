@@ -134,7 +134,7 @@ plt.ylabel('Amplitud normalizada')
 plt.legend(['Ventricular','Normal'])
 
 #%%
-
+plt.close('all')
 # Calculo la densidad espectral de potencia para cada realizacion 
 # y promedio los espectros
 # Aplico Welch
@@ -159,27 +159,52 @@ plt.xlim(0,20)
 plt.legend(['Ventricular','Normal'])
 
 #%%
+plt.close('all')
 # Uso el promedio de los espectros
 # Calculo la potencia
-Potencia = np.cumsum(Pw_n_prom)/np.sum(Pw_n_prom)
 corte_energia = 0.99 #La señal esta muy limpia, no tiene mucho ruido 
-corte = np.where(Potencia>corte_energia)[0][0]
+
+Pot_n = np.cumsum(Pw_n_prom)/np.sum(Pw_n_prom)
+corte_n = np.where(Pot_n >corte_energia)[0][0]
+
+Pot_v = np.cumsum(Pw_v_prom)/np.sum(Pw_v_prom)
+corte_v = np.where(Pot_v >corte_energia)[0][0]
 
 plt.figure(1)
 plt.plot(fw_n,Pw_n_prom/norm, 'k')
-plt.fill_between(fw_n, 0, Pw_n_prom/norm, where = fw_n < fw_n[corte], color='orange')
-plt.title('Ancho de banda donde se concentra el {:3.0f}% de la energia'.format(corte_energia*100))
+plt.fill_between(fw_n, 0, Pw_n_prom/norm, where = fw_v < fw_v[corte_n], color='blue')
+plt.title('Ancho de banda donde se concentra el {:3.0f}% de la energia para pulsos normales'.format(corte_energia*100))
 plt.xlabel('Frecuencia [Hz]')
 plt.ylabel('PSD [$V^{2}/Hz$]')
 plt.xlim(0,50)
 
-plt.annotate(   "BW = {:3.1f} Hz".format(fw_n[corte]),
-                xy=(fw_n[corte], Pw_n_prom[corte]/norm),
+plt.annotate(   "BW_n = {:3.1f} Hz".format(fw_n[corte_n]),
+                xy=(fw_n[corte_n], Pw_n_prom[corte_n]/norm),
                 xytext=(-20,20),
                 textcoords="offset points",
                 bbox=dict(boxstyle="round", fc="w"),
                 arrowprops=dict(arrowstyle='->')
 )
+
+plt.figure(2)
+plt.plot(fw_v,Pw_v_prom/norm, 'k')
+plt.fill_between(fw_n, 0, Pw_v_prom/norm, where = fw_v < fw_v[corte_v], color='green')
+plt.title('Ancho de banda donde se concentra el {:3.0f}% de la energia para pulsos ventriculares'.format(corte_energia*100))
+plt.xlabel('Frecuencia [Hz]')
+plt.ylabel('PSD [$V^{2}/Hz$]')
+plt.xlim(0,50)
+
+plt.annotate(   "BW_n = {:3.1f} Hz".format(fw_v[corte_v]),
+                xy=(fw_v[corte_v], Pw_v_prom[corte_v]/norm),
+                xytext=(-20,20),
+                textcoords="offset points",
+                bbox=dict(boxstyle="round", fc="w"),
+                arrowprops=dict(arrowstyle='->')
+)
+
+
+
+
 
 # Anular a partir de la frecuencia[corte], hacer la antitransformada y 
 # ver como queda el ECG (no tendria la fase)
