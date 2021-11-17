@@ -94,7 +94,7 @@ x1 = x + n_3db
 fft_x1 = np.fft.fft(x1, N, axis = 0)
 Per_x1 = (1/N)*(np.abs(fft_x1)**2)
 #Welch
-fw_x1, Pw_x1 = sig.welch(x1, fs, nperseg=fs, axis=0)
+fw_x1, Pw_x1 = sig.welch(x1, fs, axis=0)
 fig1, (ax1, ax2) = plt.subplots(1, 2)
 ax1.plot(frec,Per_x1)
 ax1.set_xlim(245,255)
@@ -111,7 +111,7 @@ x2 = x + n_10db
 fft_x2 = np.fft.fft(x2, N, axis = 0)
 Per_x2 = (1/N)*(np.abs(fft_x2)**2)
 #Welch
-fw_x2, Pw_x2 = sig.welch(x2, fs, nperseg=fs, axis=0)
+fw_x2, Pw_x2 = sig.welch(x2, fs, axis=0)
 fig2, (ax3, ax4) = plt.subplots(1, 2)
 ax3.plot(frec,Per_x2)
 ax3.set_xlim(245,255)
@@ -135,7 +135,7 @@ frec_p = np.linspace(0, (Npad-1), Npad)*fs/N
 fft_x1_p = np.fft.fft(x1, axis = 0, n=Npad)
 Per_x1_p = (1/N)*(np.abs(fft_x1_p)**2)
 #Welch
-fw_x1_p, Pw_x1_p = sig.welch(x1, fs, nperseg=fs, nfft=Npad, axis=0)
+fw_x1_p, Pw_x1_p = sig.welch(x1, fs, nfft=Npad, axis=0)
 fig1, (ax1, ax2) = plt.subplots(1, 2)
 ax1.plot(frec_p/(Npad/N),Per_x1_p)
 ax1.set_xlim(245,255)
@@ -151,7 +151,7 @@ ax2.set(xlabel='Frecuencia', ylabel='PSD')
 fft_x2_p = np.fft.fft(x2, axis = 0, n=Npad)
 Per_x2_p = (1/N)*(np.abs(fft_x2_p)**2)
 #Welch
-fw_x2_p, Pw_x2_p = sig.welch(x2, fs, nperseg=fs, nfft=Npad, axis=0)
+fw_x2_p, Pw_x2_p = sig.welch(x2, fs, nfft=Npad, axis=0)
 fig2, (ax3, ax4) = plt.subplots(1, 2)
 ax3.plot(frec_p/(Npad/N),Per_x2_p)
 ax3.set_xlim(245,255)
@@ -161,6 +161,14 @@ ax4.plot(fw_x2_p,Pw_x2_p)
 ax4.set_xlim(245,255)
 ax4.set_title('Periodograma de Welch para SNR={:1.0f}dB con zero padding'.format(SNR[1]))
 ax4.set(xlabel='Frecuencia', ylabel='PSD')
+
+#%%
+picos_w_x1 = np.argmax(Pw_x1_p, axis=0)
+picos_w_x1 = picos_w_x1/(Npad/N)
+err_x1 = picos_w_x1 - ff
+print(np.mean(err_x1))
+print(np.var(err_x1))
+
 
 #%%
 # Blackman-Tukey

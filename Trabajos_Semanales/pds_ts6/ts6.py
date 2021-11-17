@@ -67,77 +67,96 @@ plt.ylabel('Amplitud')
 
 # Calculo la transformada de cada una, normalizando para que estén en 0dB
 
+f = np.fft.fftfreq(Npad, d=1/fs)*(fs/Npad)
+
 fft_rec = np.fft.fft(rec, axis=0, n=Npad)
 fft_bar = np.fft.fft(bar, axis=0, n=Npad)
 fft_han = np.fft.fft(han, axis=0, n=Npad)
 fft_bm = np.fft.fft(bm, axis=0, n=Npad)
 fft_ft = np.fft.fft(ft, axis=0, n=Npad)
 
-f = np.linspace(0, (Npad-1), Npad)*fs/N
-bfrec = f <= fs/2
+fft_rec_amp = np.abs(fft_rec)
+fft_bar_amp = np.abs(fft_bar)
+fft_han_amp = np.abs(fft_han)
+fft_bm_amp = np.abs(fft_bm)
+fft_ft_amp = np.abs(fft_ft)
 
-fft_rec_db = 20*np.log10(np.abs(1/Npad*fft_rec[bfrec])/np.abs(1/Npad*fft_rec[0]))
-fft_bar_db = 20*np.log10(np.abs(1/Npad*fft_bar[bfrec])/np.abs(1/Npad*fft_bar[0]))
-fft_han_db = 20*np.log10(np.abs(1/Npad*fft_han[bfrec])/np.abs(1/Npad*fft_han[0]))
-fft_bm_db = 20*np.log10(np.abs(1/Npad*fft_bm[bfrec])/np.abs(1/Npad*fft_bm[0]))
-fft_ft_db = 20*np.log10(np.abs(1/Npad*fft_ft[bfrec])/np.abs(1/Npad*fft_ft[0]))
+fft_rec_db = 20*np.log10(fft_rec_amp/max(fft_rec_amp))
+fft_bar_db = 20*np.log10(fft_bar_amp/max(fft_bar_amp))
+fft_han_db = 20*np.log10(fft_han_amp/max(fft_han_amp))
+fft_bm_db = 20*np.log10(fft_bm_amp/max(fft_bm_amp))
+fft_ft_db = 20*np.log10(fft_ft_amp/max(fft_ft_amp))
 
 plt.figure(2)
-plt.plot(f[bfrec], fft_rec_db,'x:')  
-plt.plot(f[bfrec], fft_bar_db,'x:')  
-plt.plot(f[bfrec], fft_han_db,'x:')  
-plt.plot(f[bfrec], fft_bm_db,'x:')  
-plt.plot(f[bfrec], fft_ft_db,'x:')  
+plt.plot(f, fft_rec_db,'x:')  
+plt.plot(f, fft_bar_db,'x:') 
+plt.plot(f, fft_han_db,'x:') 
+plt.plot(f, fft_bm_db,'x:') 
+plt.plot(f, fft_ft_db,'x:')  
 
 plt.legend(['Rectangular','Bartlett','Hann','Blackman','Flattop'])
 plt.xlabel('Frecuencia [Hz]')
 plt.ylabel('Densidad de Potencia [dB]')
-plt.xlim(0,125)
+plt.xlim(0,3)
 plt.ylim(-150,5)
 
+
+# Busco las frecuencias de los cruces por cero
 def find_nearest(array, value):
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
     return array[idx]
 
-# Busco las frecuencias de los cruces por cero
 
-def zero_1(fft_ven_db, N, Npad):
+#%%
+# Rectangular
+
+
+
+
+#%%
+
+def zero_1(fft_ven_db, N, Npad, r):
     zero1 = 0;
     frec1 = 0;
-    for i in range (0,int(N/50)):
-        if fft_ven_db[i] < zero1:
-            zero1 = fft_ven_db[i]
-            frec1 = i
-    frec1 = frec1*fs/Npad  
-    return frec1;
+    for k in range (0,r):
+        if fft_ven_db[k] < zero1:
+            zero1 = fft_ven_db[k]
+            frec1 = k 
+    return frec1*fs/Npad
 
-def zero_2(fft_ven_db, Npad):
-    # np.where out: ndarray An array with elements from x where condition is True, and elements from y elsewhere
-    frec2 = np.where(fft_rec_db == find_nearest(fft_rec_db,-3))[0][0]* fs/Npad
-    return frec2
+def zero_2(fft_vent_db, f):
+    frec2 = np.where(fft_vent_db == find_nearest(fft_vent_db,-3))[0][0]
+    return frec2*fs/Npad
 
-def Wmax(fft_ven_db, N):
-    W_max = -N
-    for i in range (int(N/5),int(N/2)):
-        if fft_ven_db[i] > W_max:
-            W_max = fft_ven_db[i] 
+def Wmax(fft_ven_db, N, omg0):
+    W_max = -N+1
+    for j in range (omg0,omg0+10):
+        if fft_ven_db[j] > W_max:
+            W_max = fft_ven_db[j] 
     return W_max
 
+f = np.fft.fftfreq(Npad, d=1/fs)*(fs/Npad)
+# f = f[0:f.size//2]
+# f = np.linspace(0, (Npad-1), Npad)*fs/N
+
 fft_vent = [fft_rec_db,fft_bar_db,fft_han_db,fft_bm_db,fft_ft_db]
+rango = [20,25,25,40,200]
 z1 = [0,0,0,0,0]
 z2 = [0,0,0,0,0]
 Wm = [0,0,0,0,0]
 
-for i in range(0,5):
-    z1[i]= zero_1(fft_vent[i], N, Npad)
-    z2[i] = zero_2(fft_vent[i], Npad)
-    Wm[i] = Wmax(fft_vent[i], N)
+norm = fs/Npad
+
+for i in range(0,len(fft_vent)):
+    z1[i]= zero_1(fft_vent[i], N, Npad, rango[i])*norm
+    z2[i] = zero_2(fft_vent[i], f)*norm
+    Wm[i] = Wmax(fft_vent[i], N, np.where(f == z1[i])[0][0])
     
 #Tabla
 
 data = [[z1[0], z2[0], Wm[0]],
-        [z1[1], z2[1], Wm[1]],
+        [z1[1], '0.06', Wm[1]],
         [z1[2], z2[2], Wm[2]],
         [z1[3], z2[3], Wm[3]],
         [z1[4], z2[4], Wm[4]]]
