@@ -311,6 +311,8 @@ plt.xlabel('time (seconds)')
 plt.grid(True)
 plt.axis('tight')
 plt.legend()
+plt.xlim(3000,8000)
+plt.ylim(-10000,10000)
 
 #%%
 plt.close('all')
@@ -351,6 +353,8 @@ plt.xlabel('time (seconds)')
 plt.grid(True)
 plt.axis('tight')
 plt.legend()
+plt.xlim(3500,4500)
+plt.ylim(-8000,8000)
 
 
 
